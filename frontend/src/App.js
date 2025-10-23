@@ -599,12 +599,20 @@ function App() {
                   {prayerTimes.hijri_date} {prayerTimes.hijri_month} {prayerTimes.hijri_year} AH
                 </div>
                 <div className="text-4xl text-white font-extrabold" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.3)'}}>
-                  {new Date(currentDate.split('-').reverse().join('-')).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
+                  {(() => {
+                    // Parse DD-MMM-YYYY format properly
+                    const [day, month, year] = currentDate.split('-');
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const monthIndex = months.indexOf(month);
+                    const dateObj = new Date(parseInt(year), monthIndex, parseInt(day));
+                    return dateObj.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    });
+                  })()}
                 </div>
               </div>
 
