@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Favicon</title>
+</head>
+<body>
+    <h1>Favicon Generator</h1>
+    <canvas id="canvas" width="64" height="64"></canvas>
+    <br><br>
+    <button onclick="downloadFavicon()">Download favicon.ico</button>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the same mosque icon
+        // Background
+        ctx.fillStyle = '#047857';
+        ctx.fillRect(0, 0, 64, 64);
+        
+        // Scale factor for 64x64
+        const scale = 0.64;
+        
+        // Mosque dome (white ellipse)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.ellipse(32, 29, 11.5, 7.7, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Main building
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(22.4, 29, 19.2, 16);
+        
+        // Door
+        ctx.fillStyle = '#047857';
+        ctx.beginPath();
+        ctx.roundRect(28.8, 35.2, 6.4, 9.6, 3.2);
+        ctx.fill();
+        
+        // Left minaret
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(19.2, 22.4, 2.56, 22.4);
+        ctx.beginPath();
+        ctx.ellipse(20.48, 22.4, 1.92, 1.28, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Right minaret
+        ctx.fillRect(42.24, 22.4, 2.56, 22.4);
+        ctx.beginPath();
+        ctx.ellipse(43.52, 22.4, 1.92, 1.28, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Crescent moon on dome
+        ctx.fillStyle = '#FCD34D';
+        ctx.beginPath();
+        ctx.arc(30.72, 20.48, 1.6, 0.5 * Math.PI, 1.5 * Math.PI);
+        ctx.arc(32.64, 20.48, 1.6, 1.5 * Math.PI, 0.5 * Math.PI);
+        ctx.fill();
+        
+        // Stars
+        ctx.fillStyle = '#FCD34D';
+        ctx.beginPath();
+        ctx.arc(12.8, 16, 0.96, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(51.2, 19.2, 0.96, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        function downloadFavicon() {
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = 'favicon.ico';
+                link.href = url;
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>

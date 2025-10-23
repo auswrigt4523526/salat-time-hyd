@@ -149,7 +149,10 @@ function App() {
   const fetchPrayerTimes = async (date) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/prayer-times/${date}`);
+      // Set a longer timeout for Render free tier cold starts (60 seconds)
+      const response = await axios.get(`${API}/prayer-times/${date}`, {
+        timeout: 60000 // 60 seconds
+      });
       setPrayerTimes(response.data);
       
       // Initialize prayer adjustments
@@ -160,10 +163,13 @@ function App() {
       setAdjustments(initialAdjustments);
       
       // Fetch Hijri adjustment
-      const hijriResponse = await axios.get(`${API}/hijri-adjustment/${date}`);
+      const hijriResponse = await axios.get(`${API}/hijri-adjustment/${date}`, {
+        timeout: 60000
+      });
       setHijriAdjustment(hijriResponse.data.day_adjustment || 0);
     } catch (error) {
       console.error('Error fetching prayer times:', error);
+      alert('Unable to load prayer times. The server may be waking up. Please wait 30 seconds and refresh the page.');
     }
     setLoading(false);
   };
@@ -484,7 +490,10 @@ function App() {
           }`}>
             <CardContent className="p-8 text-center">
               <div className={darkMode ? 'text-emerald-300' : 'text-emerald-700'}>
-                Loading prayer times...
+                <div className="mb-3">Loading prayer times...</div>
+                <div className="text-sm opacity-75">
+                  ⏱️ First load may take up to 60 seconds (server waking up)
+                </div>
               </div>
             </CardContent>
           </Card>
