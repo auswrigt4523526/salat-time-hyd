@@ -4,7 +4,7 @@
 
 🔐 Your Complete MongoDB Connection String:
 -----------------------------------------------------------------
-mongodb+srv://auswrigt_db_user:azhar4523526@namaz.58tbxud.mongodb.net/namaz_db?retryWrites=true&w=majority&appName=Namaz
+mongodb+srv://auswrigt_db_user:azhar4523526@namaz.58tbxud.mongodb.net/?retryWrites=true&w=majority&appName=Namaz
 
 ✅ Files Updated:
 -----------------------------------------------------------------
@@ -83,7 +83,7 @@ STEP 3: DEPLOY TO VERCEL
 
 7. Add Environment Variable:
    Name: MONGODB_URL
-   Value: mongodb+srv://auswrigt_db_user:azhar4523526@namaz.58tbxud.mongodb.net/namaz_db?retryWrites=true&w=majority&appName=Namaz
+   Value: mongodb+srv://auswrigt_db_user:azhar4523526@namaz.58tbxud.mongodb.net/?retryWrites=true&w=majority&appName=Namaz
    
    ⚠️ COPY THE VALUE ABOVE EXACTLY - NO SPACES!
    

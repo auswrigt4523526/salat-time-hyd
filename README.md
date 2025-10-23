@@ -1,4 +1,4 @@
-# Namaz Timings - Hyderabad
+# Salat Time Hyd
 
 Islamic prayer times application for Hyderabad, India with Hijri calendar support.
 
@@ -25,9 +25,9 @@ Islamic prayer times application for Hyderabad, India with Hijri calendar suppor
    ```bash
    git init
    git add .
-   git commit -m "Initial commit - Namaz Timings App"
+   git commit -m "Initial commit - Salat Time Hyd"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/namaz-timings.git
+   git remote add origin https://github.com/YOUR_USERNAME/salat-time-hyd.git
    git push -u origin main
    ```
 
@@ -46,7 +46,7 @@ Islamic prayer times application for Hyderabad, India with Hijri calendar suppor
    - Click "Deploy"
 
 4. **Access on Mobile:**
-   - Vercel will give you a URL like: `https://your-app.vercel.app`
+   - Vercel will give you a URL like: `https://salat-time-hyd.vercel.app`
    - Open this URL on your mobile browser
    - Add to home screen for app-like experience
 
