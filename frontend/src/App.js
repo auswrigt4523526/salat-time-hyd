@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import html2canvas from "html2canvas";
