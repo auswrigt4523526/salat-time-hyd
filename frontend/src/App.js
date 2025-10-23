@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import html2canvas from "html2canvas";
@@ -18,7 +19,7 @@ function App() {
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
   const [loading, setLoading] = useState(false);
-  const [adjustments, setAdjustments] = useState({});
+  const [adjustments, setAdjustments] = useState({}); // Format: { prayerName: { start: 0, end: 0 } }
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false);
   const [hijriAdjustment, setHijriAdjustment] = useState(0);
   const [isHijriAdjustmentOpen, setIsHijriAdjustmentOpen] = useState(false);
@@ -148,17 +149,19 @@ function App() {
 
   const fetchPrayerTimes = async (date) => {
     setLoading(true);
-    try {
-      // Set a longer timeout for Render free tier cold starts (60 seconds)
+    try { // Set a longer timeout for Render free tier cold starts (60 seconds)
       const response = await axios.get(`${API}/prayer-times/${date}`, {
         timeout: 60000 // 60 seconds
       });
       setPrayerTimes(response.data);
       
-      // Initialize prayer adjustments
+      // Initialize prayer adjustments with both start and end
       const initialAdjustments = {};
       response.data.prayers.forEach(prayer => {
-        initialAdjustments[prayer.name] = prayer.adjustment;
+        initialAdjustments[prayer.name] = {
+          start: prayer.start_adjustment || 0,
+          end: prayer.end_adjustment || 0
+        };
       });
       setAdjustments(initialAdjustments);
       
@@ -178,7 +181,9 @@ function App() {
     try {
       const adjustmentList = Object.keys(adjustments).map(prayerName => ({
         prayer_name: prayerName,
-        adjustment: adjustments[prayerName]
+        start_adjustment: adjustments[prayerName].start || 0,
+        end_adjustment: adjustments[prayerName].end || 0,
+        adjustment: adjustments[prayerName].start || 0 // For backward compatibility
       }));
 
       await axios.post(`${API}/adjust-prayers/${currentDate}`, {
@@ -824,26 +829,56 @@ function App() {
                 Adjust Prayer Times
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-emerald-900">Adjust Prayer Times</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 {prayerTimes?.prayers.map(prayer => (
-                  <div key={prayer.name} className="flex items-center justify-between">
-                    <label className="text-emerald-800 font-medium">{prayer.name}</label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        value={adjustments[prayer.name] || 0}
-                        onChange={(e) => setAdjustments({
-                          ...adjustments,
-                          [prayer.name]: parseInt(e.target.value) || 0
-                        })}
-                        className="w-20 text-center"
-                        placeholder="0"
-                      />
-                      <span className="text-sm text-emerald-600">min</span>
+                  <div key={prayer.name} className="border border-emerald-200 rounded-lg p-4">
+                    <label className="text-emerald-900 font-semibold text-lg mb-3 block">{prayer.name}</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Start Time Adjustment */}
+                      <div className="space-y-2">
+                        <Label className="text-sm text-emerald-700">Start Time</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            value={adjustments[prayer.name]?.start || 0}
+                            onChange={(e) => setAdjustments({
+                              ...adjustments,
+                              [prayer.name]: {
+                                ...adjustments[prayer.name],
+                                start: parseInt(e.target.value) || 0
+                              }
+                            })}
+                            className="w-20 text-center"
+                            placeholder="0"
+                          />
+                          <span className="text-sm text-emerald-600">min</span>
+                        </div>
+                      </div>
+                      
+                      {/* End Time Adjustment */}
+                      <div className="space-y-2">
+                        <Label className="text-sm text-emerald-700">End Time</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            value={adjustments[prayer.name]?.end || 0}
+                            onChange={(e) => setAdjustments({
+                              ...adjustments,
+                              [prayer.name]: {
+                                ...adjustments[prayer.name],
+                                end: parseInt(e.target.value) || 0
+                              }
+                            })}
+                            className="w-20 text-center"
+                            placeholder="0"
+                          />
+                          <span className="text-sm text-emerald-600">min</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

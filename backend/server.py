@@ -36,7 +36,9 @@ class PrayerTime(BaseModel):
     name: str
     start_time: str
     end_time: str
-    adjustment: int = 0  # Manual adjustment in minutes
+    start_adjustment: int = 0  # Manual adjustment for start time in minutes
+    end_adjustment: int = 0    # Manual adjustment for end time in minutes
+    adjustment: int = 0  # Deprecated: kept for backward compatibility
 
 class PrayerTimings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -49,7 +51,9 @@ class PrayerTimings(BaseModel):
 
 class PrayerAdjustment(BaseModel):
     prayer_name: str
-    adjustment: int  # in minutes
+    start_adjustment: int = 0  # in minutes
+    end_adjustment: int = 0    # in minutes
+    adjustment: int = 0  # Deprecated: kept for backward compatibility
 
 class ManualAdjustments(BaseModel):
     adjustments: List[PrayerAdjustment]
@@ -263,33 +267,49 @@ async def get_prayer_times(date: str):
         # Create prayer objects with adjustments
         prayers = []
         for prayer_name, start_time in prayer_times.items():
-            # Find adjustment for this prayer
-            adjustment = 0
+            # Find adjustments for this prayer
+            start_adjustment = 0
+            end_adjustment = 0
             for adj in adjustments:
                 if adj["prayer_name"] == prayer_name:
-                    adjustment = adj["adjustment"]
+                    # Support both old and new format
+                    start_adjustment = adj.get("start_adjustment", adj.get("adjustment", 0))
+                    end_adjustment = adj.get("end_adjustment", 0)
                     break
             
-            # Apply adjustment
+            # Apply start time adjustment
             start_time_obj = datetime.strptime(start_time, '%H:%M')
-            total_minutes = start_time_obj.hour * 60 + start_time_obj.minute + adjustment
+            start_total_minutes = start_time_obj.hour * 60 + start_time_obj.minute + start_adjustment
             
             # Handle overflow/underflow
-            total_minutes = max(0, min(total_minutes, 24 * 60 - 1))
+            start_total_minutes = max(0, min(start_total_minutes, 24 * 60 - 1))
             
-            adjusted_hour = total_minutes // 60
-            adjusted_minute = total_minutes % 60
-            adjusted_start_str = f"{adjusted_hour:02d}:{adjusted_minute:02d}"
+            adjusted_start_hour = start_total_minutes // 60
+            adjusted_start_minute = start_total_minutes % 60
+            adjusted_start_str = f"{adjusted_start_hour:02d}:{adjusted_start_minute:02d}"
+            
+            # Apply end time adjustment
+            end_time_obj = datetime.strptime(end_times[prayer_name], '%H:%M')
+            end_total_minutes = end_time_obj.hour * 60 + end_time_obj.minute + end_adjustment
+            
+            # Handle overflow/underflow
+            end_total_minutes = max(0, min(end_total_minutes, 24 * 60 - 1))
+            
+            adjusted_end_hour = end_total_minutes // 60
+            adjusted_end_minute = end_total_minutes % 60
+            adjusted_end_str = f"{adjusted_end_hour:02d}:{adjusted_end_minute:02d}"
             
             # Format to 12h no AM/PM
             formatted_start = format_time_12h_no_ampm(adjusted_start_str)
-            formatted_end = format_time_12h_no_ampm(end_times[prayer_name])
+            formatted_end = format_time_12h_no_ampm(adjusted_end_str)
             
             prayers.append(PrayerTime(
                 name=prayer_name,
                 start_time=formatted_start,
                 end_time=formatted_end,
-                adjustment=adjustment
+                start_adjustment=start_adjustment,
+                end_adjustment=end_adjustment,
+                adjustment=start_adjustment  # For backward compatibility
             ))
         
         return PrayerTimings(
