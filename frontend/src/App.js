@@ -215,14 +215,33 @@ function App() {
     const currentMinute = now.getMinutes();
     const currentTotalMinutes = currentHour * 60 + currentMinute;
     
-    // Convert prayer times to minutes for comparison
-    const prayerTimesInMinutes = prayerTimes.prayers.map(prayer => {
-      const [hours, minutes] = prayer.start_time.split(':').map(Number);
-      let totalMinutes = hours * 60 + minutes;
+    // Convert prayer times to 24-hour format minutes for comparison
+    const prayerTimesInMinutes = prayerTimes.prayers.map((prayer, index) => {
+      let [hours, minutes] = prayer.start_time.split(':').map(Number);
       
-      // Handle time wrapping (assuming times are in 24h format from backend)
-      // If hour is less than 12 and it's after noon, it might be PM time
-      // But since backend gives us proper 24h times, we don't need conversion
+      // Convert to 24-hour format based on prayer position
+      // Fajr is early morning (AM)
+      // Dhuhr, Asr are afternoon (PM if < 12)
+      // Maghrib, Isha are evening/night (PM)
+      
+      if (prayer.name === 'Fajr') {
+        // Fajr is always early morning (before sunrise), keep as is
+        // Already in correct format (e.g., 5:11 AM)
+      } else if (prayer.name === 'Dhuhr') {
+        // Dhuhr is noon/afternoon
+        if (hours < 12 && hours !== 12) hours += 12;
+      } else if (prayer.name === 'Asr') {
+        // Asr is afternoon
+        if (hours < 12) hours += 12;
+      } else if (prayer.name === 'Maghrib') {
+        // Maghrib is sunset/evening
+        if (hours < 12) hours += 12;
+      } else if (prayer.name === 'Isha') {
+        // Isha is night
+        if (hours < 12) hours += 12;
+      }
+      
+      const totalMinutes = hours * 60 + minutes;
       
       return {
         ...prayer,
@@ -244,7 +263,7 @@ function App() {
       }
     }
     
-    // If we're before Fajr, show Isha as current (night time)
+    // If we're before Fajr (early morning hours), show Isha as current
     return prayerTimesInMinutes[prayerTimesInMinutes.length - 1];
   };
 
@@ -570,16 +589,16 @@ function App() {
         {/* Hidden Share Card - for generating image */}
         <div ref={shareCardRef} className="fixed -left-[9999px] w-[720px] h-auto">
           {prayerTimes && (
-            <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-8 rounded-lg">
+            <div className="bg-gradient-to-br from-blue-900 via-blue-700 to-blue-950 p-12 rounded-lg">
               {/* Header */}
-              <div className="text-center mb-6">
-                <h1 className="text-4xl font-bold text-white mb-3">
+              <div className="text-center mb-8">
+                <h1 className="text-5xl font-extrabold text-white mb-4 tracking-wide" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.3)'}}>
                   🕌 Namaz Timings Hyderabad, India
                 </h1>
-                <div className="text-2xl text-emerald-300 font-semibold mb-2">
+                <div className="text-3xl text-emerald-300 font-bold mb-3">
                   {prayerTimes.hijri_date} {prayerTimes.hijri_month} {prayerTimes.hijri_year} AH
                 </div>
-                <div className="text-xl text-white">
+                <div className="text-4xl text-white font-extrabold" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.3)'}}>
                   {new Date(currentDate.split('-').reverse().join('-')).toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -590,20 +609,20 @@ function App() {
               </div>
 
               {/* Prayer Times Table */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden border-2 border-white/20">
+              <div className="bg-blue-800/40 backdrop-blur-sm rounded-xl overflow-hidden border-4 border-white/30">
                 <div className="grid grid-cols-4 gap-0">
                   {/* Table Header */}
-                  <div className="bg-blue-800 p-6 min-h-[80px] flex items-center justify-center border-r border-white/20">
-                    <div className="text-2xl font-bold text-white">Name</div>
+                  <div className="bg-blue-800/60 py-6 px-8 min-h-[100px] flex items-center justify-center border-r-2 border-white/30">
+                    <div className="text-4xl font-extrabold text-white">Name</div>
                   </div>
-                  <div className="bg-blue-800 p-6 min-h-[80px] flex items-center justify-center border-r border-white/20">
-                    <div className="text-2xl font-bold text-white">Start</div>
+                  <div className="bg-blue-800/60 py-6 px-8 min-h-[100px] flex items-center justify-center border-r-2 border-white/30">
+                    <div className="text-4xl font-extrabold text-white">Start</div>
                   </div>
-                  <div className="bg-blue-800 p-6 min-h-[80px] flex items-center justify-center border-r border-white/20">
-                    <div className="text-2xl font-bold text-white">End</div>
+                  <div className="bg-blue-800/60 py-6 px-8 min-h-[100px] flex items-center justify-center border-r-2 border-white/30">
+                    <div className="text-4xl font-extrabold text-white">End</div>
                   </div>
-                  <div className="bg-blue-800 p-6 min-h-[80px] flex items-center justify-center">
-                    <div className="text-2xl font-bold text-white">نماز</div>
+                  <div className="bg-blue-800/60 py-6 px-8 min-h-[100px] flex items-center justify-center">
+                    <div className="text-4xl font-extrabold text-white">نماز</div>
                   </div>
 
                   {/* Prayer Rows */}
@@ -618,29 +637,29 @@ function App() {
 
                     return (
                       <React.Fragment key={prayer.id}>
-                        <div className={`p-6 min-h-[90px] flex items-center justify-center border-r border-white/20 ${
-                          index < prayerTimes.prayers.length - 1 ? 'border-b border-white/20' : ''
+                        <div className={`py-6 px-8 min-h-[110px] flex items-center justify-start border-r-2 border-white/30 ${
+                          index < prayerTimes.prayers.length - 1 ? 'border-b-2 border-white/30' : ''
                         }`}>
-                          <div className="text-2xl font-bold text-white">{prayer.name}</div>
+                          <div className="text-4xl font-bold text-white">{prayer.name}</div>
                         </div>
-                        <div className={`p-6 min-h-[90px] flex items-center justify-center border-r border-white/20 ${
-                          index < prayerTimes.prayers.length - 1 ? 'border-b border-white/20' : ''
+                        <div className={`py-6 px-8 min-h-[110px] flex items-center justify-center border-r-2 border-white/30 ${
+                          index < prayerTimes.prayers.length - 1 ? 'border-b-2 border-white/30' : ''
                         }`}>
-                          <div className="text-3xl font-mono font-bold text-emerald-300">
+                          <div className="text-5xl font-bold text-emerald-300" style={{fontFamily: 'monospace'}}>
                             {prayer.start_time}
                           </div>
                         </div>
-                        <div className={`p-6 min-h-[90px] flex items-center justify-center border-r border-white/20 ${
-                          index < prayerTimes.prayers.length - 1 ? 'border-b border-white/20' : ''
+                        <div className={`py-6 px-8 min-h-[110px] flex items-center justify-center border-r-2 border-white/30 ${
+                          index < prayerTimes.prayers.length - 1 ? 'border-b-2 border-white/30' : ''
                         }`}>
-                          <div className="text-3xl font-mono font-bold text-emerald-300">
+                          <div className="text-5xl font-bold text-emerald-300" style={{fontFamily: 'monospace'}}>
                             {prayer.end_time}
                           </div>
                         </div>
-                        <div className={`p-6 min-h-[90px] flex items-center justify-center ${
-                          index < prayerTimes.prayers.length - 1 ? 'border-b border-white/20' : ''
+                        <div className={`py-6 px-8 min-h-[110px] flex items-center justify-center ${
+                          index < prayerTimes.prayers.length - 1 ? 'border-b-2 border-white/30' : ''
                         }`}>
-                          <div className="text-3xl font-bold text-white">
+                          <div className="text-5xl font-bold text-white">
                             {arabicNames[prayer.name]}
                           </div>
                         </div>
@@ -651,12 +670,12 @@ function App() {
               </div>
 
               {/* Footer */}
-              <div className="mt-6 text-center">
-                <p className="text-2xl text-white font-semibold">
+              <div className="mt-10 text-center">
+                <p className="text-4xl text-white font-bold" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.3)'}}>
                   May Allah Accept Our Prayers
                 </p>
-                <p className="text-3xl text-emerald-300 font-bold mt-2">
-                  الله أكبر • Allahu Akbar!
+                <p className="text-4xl text-white font-extrabold mt-3" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.3)'}}>
+                  Allahu Akbar!
                 </p>
               </div>
             </div>
